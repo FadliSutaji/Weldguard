@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WeldGuard IoT — Manajemen Pekerja</title>
+<meta name="description" content="Database RFID operator las dan manajemen akses mesin.">
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <img src="assets/iot_logo.png" alt="WeldGuard Logo">
+    <div class="sidebar-logo-text"><h1>WeldGuard</h1><p>IoT Safety System</p></div>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Menu Utama</div>
+    <a class="nav-item" href="index.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Overview</a>
+    <a class="nav-item" href="live-monitoring.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 10l4.553-2.069A1 1 0 0121 8.87v6.26a1 1 0 01-1.447.9L15 14"/><rect x="1" y="6" width="15" height="12" rx="2"/></svg>Live Monitoring
+      <span class="nav-badge">0</span></a>
+    <a class="nav-item" href="incident-log.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Log Insiden
+      <span class="nav-badge" id="nav-badge-inc">0</span></a>
+    <a class="nav-item active" href="worker-management.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>Manajemen Pekerja</a>
+  </div>
+  <div class="sidebar-footer">
+    <div class="sidebar-clock" id="clock">00:00:00</div>
+    <div class="sidebar-date" id="clock-date">Memuat...</div>
+    <div class="live-indicator"><span class="live-dot"></span> Menghubungkan...</div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main-wrapper">
+  <header class="topbar">
+    <div>
+      <div class="topbar-title">👷 Manajemen Pekerja — RFID Directory</div>
+      <div class="topbar-subtitle">Database operator dan kontrol akses mesin las</div>
+    </div>
+    <div class="topbar-spacer"></div>
+    <button class="topbar-btn primary" onclick="openModal('modal-add-worker')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Tambah Operator
+    </button>
+  </header>
+
+  <main class="content">
+
+    <!-- KPI ROW -->
+    <div class="grid-4" style="margin-bottom:24px;">
+      <div class="kpi-card cyan" style="padding:16px;">
+        <div class="kpi-icon cyan" style="width:36px;height:36px;margin-bottom:10px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
+        <div class="kpi-value" style="font-size:1.8rem;" id="wk-total">0</div>
+        <div class="kpi-label">Total Operator</div>
+      </div>
+      <div class="kpi-card green" style="padding:16px;">
+        <div class="kpi-icon green" style="width:36px;height:36px;margin-bottom:10px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+        <div class="kpi-value" style="font-size:1.8rem;" id="wk-active">0</div>
+        <div class="kpi-label">Sertifikat Valid</div>
+      </div>
+      <div class="kpi-card red" style="padding:16px;">
+        <div class="kpi-icon red" style="width:36px;height:36px;margin-bottom:10px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+        <div class="kpi-value" style="font-size:1.8rem;" id="wk-expired">0</div>
+        <div class="kpi-label">Sertifikat Kadaluarsa</div>
+      </div>
+      <div class="kpi-card orange" style="padding:16px;">
+        <div class="kpi-icon orange" style="width:36px;height:36px;margin-bottom:10px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></div>
+        <div class="kpi-value" style="font-size:1.8rem;" id="wk-suspended">0</div>
+        <div class="kpi-label">Akses Diblokir</div>
+      </div>
+    </div>
+
+    <!-- CONTENT GRID -->
+    <div class="grid-2" style="align-items:start;">
+
+      <!-- WORKER TABLE -->
+      <div>
+        <div class="flex justify-between items-center mb-3">
+          <h2 class="section-heading" style="margin-bottom:0;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+            Direktori Operator RFID
+          </h2>
+        </div>
+        <div class="filter-bar" style="margin-bottom:12px;">
+          <div class="search-input-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" class="search-input" placeholder="Cari nama atau departemen..." id="search-worker" oninput="filterWorkers()">
+          </div>
+          <select class="filter-select" id="filter-worker-status" onchange="filterWorkers()">
+            <option value="">Semua Status</option>
+            <option value="active">Aktif</option>
+            <option value="expired">Kadaluarsa</option>
+            <option value="suspended">Diblokir</option>
+          </select>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Operator</th>
+                <th>RFID UID</th>
+                <th>Departemen</th>
+                <th>Sertifikat</th>
+                <th>Status</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="worker-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- RIGHT PANEL -->
+      <div style="display:flex;flex-direction:column;gap:16px;">
+
+        <!-- CERT PIE CHART -->
+        <div>
+          <h2 class="section-heading">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.21 15.89A10 10 0 118 2.83"/><path d="M22 12A10 10 0 0012 2v10z"/></svg>
+            Distribusi Status Sertifikasi
+          </h2>
+          <div class="card" style="padding:16px;">
+            <div class="chart-container" style="height:200px;">
+              <canvas id="certChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- RECENT RFID SCANS (from incidents) -->
+        <div>
+          <h2 class="section-heading">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            Log Aktivitas RFID Terkini
+          </h2>
+          <div class="card" style="padding:16px;display:flex;flex-direction:column;gap:10px;" id="rfid-log">
+            <div class="fs-sm text-muted">Memuat data...</div>
+          </div>
+        </div>
+
+        <!-- CERT WARNINGS -->
+        <div>
+          <h2 class="section-heading">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            Perhatian — Sertifikat
+          </h2>
+          <div class="card" style="padding:16px;" id="cert-warnings">
+            <div class="fs-sm text-muted">Memuat data...</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ADD WORKER MODAL -->
+<div class="modal-overlay" id="modal-add-worker">
+  <div class="modal" style="max-width:500px;">
+    <div class="modal-header">
+      <div><div class="modal-title">➕ Tambah Operator Baru</div><div class="modal-subtitle">Hubungkan kartu RFID dengan data pekerja</div></div>
+      <button class="modal-close" data-close-modal="modal-add-worker">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="form-group"><label class="form-label">Nama Lengkap</label><input type="text" class="form-input" placeholder="Nama operator..." id="add-worker-name"></div>
+    <div class="form-group"><label class="form-label">RFID UID</label><input type="text" class="form-input" placeholder="Tap kartu RFID atau masukkan manual..." id="add-worker-uid" style="font-family:monospace;">
+      <div class="fs-sm text-muted" style="margin-top:4px;">Bisa diisi nanti saat tap pertama kali. Kosongkan jika belum punya.</div>
+    </div>
+    <div class="form-group"><label class="form-label">Departemen</label>
+      <select class="form-input" id="add-worker-dept"><option>Las Struktural</option><option>Las Pipa</option><option>Las Otomotif</option><option>Las Kapal</option></select>
+    </div>
+    <div class="form-group"><label class="form-label">Masa Berlaku Sertifikasi</label><input type="date" class="form-input" id="add-worker-cert"></div>
+    <div class="form-group"><label class="form-label">Status Akses</label>
+      <select class="form-input" id="add-worker-status"><option value="active">Aktif</option><option value="suspended">Diblokir</option></select>
+    </div>
+    <div class="flex gap-2">
+      <button class="btn btn-primary" onclick="submitAddWorker()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;"><polyline points="20 6 9 17 4 12"/></svg>
+        Simpan Operator
+      </button>
+      <button class="btn btn-secondary" data-close-modal="modal-add-worker">Batal</button>
+    </div>
+  </div>
+</div>
+
+<!-- WORKER DETAIL MODAL -->
+<div class="modal-overlay" id="modal-worker-detail">
+  <div class="modal" style="max-width:460px;">
+    <div class="modal-header">
+      <div><div class="modal-title" id="wd-title">Detail Operator</div><div class="modal-subtitle" id="wd-sub">—</div></div>
+      <button class="modal-close" data-close-modal="modal-worker-detail">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div id="wd-body"></div>
+    <div class="flex gap-2" style="margin-top:16px;">
+      <button id="wd-toggle-btn" class="btn btn-danger btn-sm">Cabut Akses</button>
+      <button class="btn btn-secondary btn-sm" data-close-modal="modal-worker-detail">Tutup</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+<script src="js/main.js?v=2"></script>
+<script>
+
+let certChartInstance = null;
+
+function buildWorkerRow(w) {
+  const days = Math.ceil((new Date(w.cert) - new Date()) / 86400000);
+  const certColor = w.status === 'expired' ? 'var(--red)' : days < 90 ? 'var(--yellow)' : 'var(--green)';
+  const statusBadge = {
+    active:    '<span class="badge safe">Aktif</span>',
+    expired:   '<span class="badge danger">Kadaluarsa</span>',
+    suspended: '<span class="badge warning">Diblokir</span>',
+  }[w.status] || '<span class="badge idle">—</span>';
+  const initials = w.avatar || w.name.split(' ').map(x=>x[0]).join('').substring(0,2).toUpperCase();
+  const color = w.color || '#f97316';
+
+  return `<tr data-name="${w.name.toLowerCase()}" data-dept="${(w.dept||'').toLowerCase()}" data-status="${w.status}">
+    <td>
+      <div class="flex items-center gap-2">
+        <div class="avatar" style="background:${color}22;color:${color};">${initials}</div>
+        <div><div class="fs-sm fw-bold text-primary">${w.name}</div><div style="font-size:0.7rem;color:var(--text-muted);">${w.dept || ''}</div></div>
+      </div>
+    </td>
+    <td class="mono" style="color:var(--cyan);">${w.uid || '—'}</td>
+    <td class="fs-sm">${w.dept || '—'}</td>
+    <td><span style="font-family:monospace;font-size:0.78rem;color:${certColor};">${w.cert || '—'}</span></td>
+    <td>${statusBadge}</td>
+    <td>
+      <div class="flex gap-2">
+        <button class="icon-btn" title="Detail" onclick="showWorkerDetail('${w.uid}')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </button>
+      </div>
+    </td>
+  </tr>`;
+}
+
+window.filterWorkers = () => {
+  const q = document.getElementById('search-worker').value.toLowerCase();
+  const s = document.getElementById('filter-worker-status').value;
+  document.querySelectorAll('#worker-tbody tr').forEach(row => {
+    const matchQ = (row.dataset.name || '').includes(q) || (row.dataset.dept || '').includes(q);
+    const matchS = !s || row.dataset.status === s;
+    row.style.display = matchQ && matchS ? '' : 'none';
+  });
+};
+
+window.showWorkerDetail = (uid) => {
+  const w = WORKERS.find(x => x.uid === uid);
+  if (!w) return;
+  document.getElementById('wd-title').textContent = w.name;
+  document.getElementById('wd-sub').textContent = `${w.dept || ''} · UID: ${w.uid}`;
+  const days = Math.ceil((new Date(w.cert) - new Date()) / 86400000);
+
+  // Count incidents for this worker
+  const workerIncidents = INCIDENTS.filter(i => i.worker === w.name || i.uid === w.uid);
+
+  document.getElementById('wd-body').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:0.85rem;">
+      <div class="card" style="padding:12px;"><div class="text-muted fs-sm">RFID UID</div><div class="font-mono text-orange" style="margin-top:4px;">${w.uid || '—'}</div></div>
+      <div class="card" style="padding:12px;"><div class="text-muted fs-sm">Departemen</div><div class="text-primary" style="margin-top:4px;">${w.dept || '—'}</div></div>
+      <div class="card" style="padding:12px;"><div class="text-muted fs-sm">Sertifikat Berakhir</div><div style="margin-top:4px;color:${days<0?'var(--red)':days<90?'var(--yellow)':'var(--green)'};">${w.cert || '—'}</div></div>
+      <div class="card" style="padding:12px;"><div class="text-muted fs-sm">Status Akses</div><div style="margin-top:4px;">${{active:'<span class="badge safe">Aktif</span>',expired:'<span class="badge danger">Kadaluarsa</span>',suspended:'<span class="badge warning">Diblokir</span>'}[w.status] || '—'}</div></div>
+      <div class="card" style="padding:12px;grid-column:span 2;"><div class="text-muted fs-sm">Total Insiden Tercatat</div><div style="margin-top:4px;font-size:1.1rem;font-weight:700;color:${workerIncidents.length > 0 ? 'var(--red)' : 'var(--green)'};">${workerIncidents.length} insiden</div></div>
+    </div>`;
+  openModal('modal-worker-detail');
+};
+
+// Submit new worker to backend API
+window.submitAddWorker = async () => {
+  const name = document.getElementById('add-worker-name').value.trim();
+  const uid = document.getElementById('add-worker-uid').value.trim() || '-';
+  const dept = document.getElementById('add-worker-dept').value;
+  const cert = document.getElementById('add-worker-cert').value || '2027-01-01';
+  const status = document.getElementById('add-worker-status').value;
+
+  if (!name) {
+    showToast('Nama operator harus diisi!', 'danger');
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_BASE_URL}/workers`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ uid, name, dept, cert, status })
+    });
+    const data = await res.json();
+    if (data.status === 'success') {
+      showToast(`✅ Operator ${name} berhasil ditambahkan!`, 'success');
+      closeModal('modal-add-worker');
+      // Clear form
+      document.getElementById('add-worker-name').value = '';
+      document.getElementById('add-worker-uid').value = '';
+    } else {
+      showToast(`❌ Gagal: ${data.detail || data.message || 'Error'}`, 'danger');
+    }
+  } catch (err) {
+    showToast(`❌ Gagal menambahkan operator: ${err.message}`, 'danger');
+  }
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+  const tbody = document.getElementById('worker-tbody');
+  const rfidLog = document.getElementById('rfid-log');
+  const certWarnings = document.getElementById('cert-warnings');
+
+  function renderWorkerPage() {
+    // KPI counts
+    const total = WORKERS.length;
+    const active = WORKERS.filter(w => w.status === 'active').length;
+    const expired = WORKERS.filter(w => w.status === 'expired').length;
+    const suspended = WORKERS.filter(w => w.status === 'suspended').length;
+
+    document.getElementById('wk-total').textContent = total;
+    document.getElementById('wk-active').textContent = active;
+    document.getElementById('wk-expired').textContent = expired;
+    document.getElementById('wk-suspended').textContent = suspended;
+
+    // Worker table
+    tbody.innerHTML = '';
+    WORKERS.forEach(w => tbody.innerHTML += buildWorkerRow(w));
+
+    // RFID Log (from last few incidents + station assignments)
+    rfidLog.innerHTML = '';
+    const recentScans = INCIDENTS.slice(0, 5);
+    if (recentScans.length > 0) {
+      recentScans.forEach(r => {
+        const initials = r.worker ? r.worker.split(' ').map(x=>x[0]).join('').substring(0,2).toUpperCase() : '?';
+        const isGranted = r.severity !== 'high';
+        rfidLog.innerHTML += `
+          <div class="flex items-center gap-2" style="padding:8px;background:var(--bg-card-alt);border-radius:var(--radius-sm);">
+            <span class="font-mono" style="font-size:0.7rem;color:var(--text-muted);min-width:48px;">${r.time ? r.time.split(' ')[1] : ''}</span>
+            <div class="avatar" style="background:rgba(249,115,22,0.15);color:var(--orange);font-size:0.65rem;">${initials}</div>
+            <div style="flex:1;">
+              <div class="fs-sm text-primary">${r.worker}</div>
+              <div style="font-size:0.68rem;color:var(--text-muted);">${r.uid || '—'} · ${r.station}</div>
+            </div>
+            <span class="badge ${isGranted?'safe':'danger'}">${isGranted?'Scan':'Pelanggaran'}</span>
+          </div>`;
+      });
+    } else {
+      // Show active station assignments as RFID activity
+      const activeStations = STATIONS.filter(s => s.machine === 'ON' && s.worker && s.worker !== 'Menunggu RFID...');
+      if (activeStations.length > 0) {
+        activeStations.forEach(s => {
+          const initials = s.worker.split(' ').map(x=>x[0]).join('').substring(0,2).toUpperCase();
+          rfidLog.innerHTML += `
+            <div class="flex items-center gap-2" style="padding:8px;background:var(--bg-card-alt);border-radius:var(--radius-sm);">
+              <span class="font-mono" style="font-size:0.7rem;color:var(--text-muted);min-width:48px;">Aktif</span>
+              <div class="avatar" style="background:rgba(249,115,22,0.15);color:var(--orange);font-size:0.65rem;">${initials}</div>
+              <div style="flex:1;">
+                <div class="fs-sm text-primary">${s.worker}</div>
+                <div style="font-size:0.68rem;color:var(--text-muted);">${s.uid || '—'} · ${s.id}</div>
+              </div>
+              <span class="badge safe">✓ Aktif</span>
+            </div>`;
+        });
+      } else {
+        rfidLog.innerHTML = '<div class="fs-sm text-muted" style="text-align:center;padding:12px;">Belum ada aktivitas RFID</div>';
+      }
+    }
+
+    // Cert Warnings
+    certWarnings.innerHTML = '';
+    const warningWorkers = WORKERS.filter(w => {
+      if (w.status === 'expired' || w.status === 'suspended') return true;
+      const days = Math.ceil((new Date(w.cert) - new Date()) / 86400000);
+      return days < 90;
+    });
+
+    if (warningWorkers.length > 0) {
+      warningWorkers.forEach(w => {
+        const days = Math.ceil((new Date(w.cert) - new Date()) / 86400000);
+        const isExpired = days <= 0 || w.status === 'expired';
+        const isSuspended = w.status === 'suspended';
+        const bannerClass = isExpired || isSuspended ? 'danger' : 'warning';
+        const msg = isExpired
+          ? `<strong>${w.name}</strong> — Sertifikat kadaluarsa. Akses dicabut otomatis.`
+          : isSuspended
+            ? `<strong>${w.name}</strong> — Akses diblokir oleh admin.`
+            : `<strong>${w.name}</strong> — Sertifikat berakhir dalam ${days} hari.`;
+
+        certWarnings.innerHTML += `
+          <div class="alert-banner ${bannerClass}" style="margin-bottom:8px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <div class="alert-text">${msg}</div>
+          </div>`;
+      });
+    } else {
+      certWarnings.innerHTML = `
+        <div style="text-align:center;padding:16px;color:var(--green);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:28px;height:28px;margin-bottom:8px;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          <div class="fs-sm fw-bold">Semua sertifikat valid ✓</div>
+        </div>`;
+    }
+
+    // Update chart
+    updateCertChart(active, expired, suspended);
+  }
+
+  function updateCertChart(active, expired, suspended) {
+    if (certChartInstance) {
+      certChartInstance.data.datasets[0].data = [active, expired, suspended];
+      certChartInstance.update();
+    }
+  }
+
+  // Init chart
+  const ctx = document.getElementById('certChart').getContext('2d');
+  certChartInstance = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Valid', 'Kadaluarsa', 'Diblokir'],
+      datasets: [{
+        data: [0, 0, 0],
+        backgroundColor: ['rgba(34,197,94,0.8)', 'rgba(239,68,68,0.7)', 'rgba(234,179,8,0.7)'],
+        borderColor: ['#22c55e','#ef4444','#eab308'],
+        borderWidth: 2,
+        hoverOffset: 6,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      cutout: '68%',
+      plugins: {
+        legend: { position: 'right', labels: { color: '#8899bb', font: { family: 'Inter', size: 11 }, padding: 12, boxWidth: 12 } },
+        tooltip: {
+          backgroundColor: '#131c2e',
+          borderColor: 'rgba(99,130,190,0.25)',
+          borderWidth: 1,
+          titleColor: '#e8edf7',
+          bodyColor: '#8899bb',
+        }
+      }
+    }
+  });
+
+  // Start WebSocket/Polling from backend
+  if (typeof startDataPolling === 'function') {
+    startDataPolling(renderWorkerPage, 2000);
+  } else {
+    renderWorkerPage();
+  }
+});
+</script>
+</body>
+</html>

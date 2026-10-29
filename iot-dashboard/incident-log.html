@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WeldGuard IoT — Log Insiden</title>
+<meta name="description" content="Log insiden K3 dengan galeri snapshot bukti pelanggaran APD.">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <img src="assets/iot_logo.png" alt="WeldGuard Logo">
+    <div class="sidebar-logo-text"><h1>WeldGuard</h1><p>IoT Safety System</p></div>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Menu Utama</div>
+    <a class="nav-item" href="index.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Overview</a>
+    <a class="nav-item" href="live-monitoring.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 10l4.553-2.069A1 1 0 0121 8.87v6.26a1 1 0 01-1.447.9L15 14"/><rect x="1" y="6" width="15" height="12" rx="2"/></svg>Live Monitoring
+      <span class="nav-badge" id="nav-badge-cam">0</span></a>
+    <a class="nav-item active" href="incident-log.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Log Insiden
+      <span class="nav-badge" id="nav-badge-inc">0</span></a>
+    <a class="nav-item" href="worker-management.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>Manajemen Pekerja</a>
+  </div>
+  <div class="sidebar-footer">
+    <div class="sidebar-clock" id="clock">00:00:00</div>
+    <div class="sidebar-date" id="clock-date">Memuat...</div>
+    <div class="live-indicator"><span class="live-dot"></span> Menghubungkan...</div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main-wrapper">
+  <header class="topbar">
+    <div>
+      <div class="topbar-title">⚠️ Log Insiden & Peringatan</div>
+      <div class="topbar-subtitle">Riwayat lengkap pelanggaran K3 beserta bukti snapshot</div>
+    </div>
+    <div class="topbar-spacer"></div>
+    <button class="topbar-btn primary" onclick="openModal('modal-export')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Ekspor Log
+    </button>
+  </header>
+
+  <main class="content">
+
+    <!-- SUMMARY KPI ROW -->
+    <div class="grid-4" style="margin-bottom:24px;">
+      <div class="kpi-card red" style="padding:16px;">
+        <div class="kpi-icon red" style="width:36px;height:36px;margin-bottom:10px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+        </div>
+        <div class="kpi-value" style="font-size:1.8rem;" id="inc-total">0</div>
+        <div class="kpi-label">Total Insiden</div>
+      </div>
+      <div class="kpi-card orange" style="padding:16px;">
+        <div class="kpi-icon orange" style="width:36px;height:36px;margin-bottom:10px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <div class="kpi-value" style="font-size:1.8rem;" id="inc-high">0</div>
+        <div class="kpi-label">Tingkat Tinggi</div>
+      </div>
+      <div class="kpi-card blue" style="padding:16px;">
+        <div class="kpi-icon blue" style="width:36px;height:36px;margin-bottom:10px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <div class="kpi-value" style="font-size:1.8rem;" id="inc-today">0</div>
+        <div class="kpi-label">Hari Ini</div>
+      </div>
+      <div class="kpi-card cyan" style="padding:16px;">
+        <div class="kpi-icon cyan" style="width:36px;height:36px;margin-bottom:10px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        </div>
+        <div class="kpi-value" style="font-size:1.8rem;" id="inc-snapshots">0</div>
+        <div class="kpi-label">Snapshot Tersimpan</div>
+      </div>
+    </div>
+
+    <!-- FILTER BAR -->
+    <div class="filter-bar">
+      <div class="search-input-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" class="search-input" placeholder="Cari operator, stasiun, atau jenis pelanggaran..." id="search-inc" oninput="filterIncidents()">
+      </div>
+      <select class="filter-select" id="filter-sev" onchange="filterIncidents()">
+        <option value="">Semua Tingkat</option>
+        <option value="high">Tinggi</option>
+        <option value="medium">Sedang</option>
+        <option value="low">Rendah</option>
+      </select>
+      <select class="filter-select" id="filter-station" onchange="filterIncidents()">
+        <option value="">Semua Stasiun</option>
+        <!-- Dynamically populated -->
+      </select>
+      <input type="date" class="filter-select" id="filter-date" onchange="filterIncidents()">
+    </div>
+
+    <!-- INCIDENTS TABLE -->
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>ID Insiden</th>
+            <th>Waktu</th>
+            <th>Stasiun</th>
+            <th>Operator</th>
+            <th>RFID</th>
+            <th>Jenis Pelanggaran</th>
+            <th>Tingkat</th>
+            <th>Snapshot</th>
+            <th>Aksi</th>
+          </tr>
+        </thead>
+        <tbody id="incident-tbody"></tbody>
+      </table>
+    </div>
+    <div id="empty-state" style="display:none;text-align:center;padding:40px;color:var(--text-muted);">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:40px;height:40px;margin-bottom:12px;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <div>Tidak ada insiden yang sesuai filter.</div>
+    </div>
+
+    <!-- SNAPSHOT GALLERY -->
+    <div class="page-section" style="margin-top:28px;">
+      <h2 class="section-heading">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="12" cy="12" r="3"/><circle cx="8.5" cy="8.5" r="1" fill="currentColor"/></svg>
+        Galeri Snapshot Pelanggaran
+      </h2>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;" id="snapshot-gallery">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- SNAPSHOT MODAL -->
+<div class="modal-overlay" id="modal-snapshot">
+  <div class="modal" style="max-width:600px;">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="snap-title">Bukti Insiden</div>
+        <div class="modal-subtitle" id="snap-sub">—</div>
+      </div>
+      <button class="modal-close" data-close-modal="modal-snapshot">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <img src="assets/welder_violation.png" id="snap-img" alt="Snapshot" style="width:100%;border-radius:var(--radius);border:2px solid rgba(239,68,68,0.4);margin-bottom:16px;">
+    <div class="alert-banner danger" style="margin:0;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <div class="alert-text" id="snap-detail">Detail insiden.</div>
+    </div>
+    <div class="flex gap-2" style="margin-top:16px;">
+      <button class="btn btn-secondary btn-sm" data-close-modal="modal-snapshot">Tutup</button>
+    </div>
+  </div>
+</div>
+
+<!-- EXPORT MODAL -->
+<div class="modal-overlay" id="modal-export">
+  <div class="modal" style="max-width:460px;">
+    <div class="modal-header">
+      <div><div class="modal-title">📥 Ekspor Log Insiden</div><div class="modal-subtitle">Pilih parameter ekspor</div></div>
+      <button class="modal-close" data-close-modal="modal-export">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="form-group"><label class="form-label">Dari Tanggal</label><input type="date" class="form-input"></div>
+    <div class="form-group"><label class="form-label">Sampai Tanggal</label><input type="date" class="form-input"></div>
+    <div class="form-group"><label class="form-label">Format</label>
+      <select class="form-input"><option>PDF (dengan foto snapshot)</option><option>Excel (XLSX)</option><option>CSV</option></select>
+    </div>
+    <div class="flex gap-2">
+      <button class="btn btn-primary" onclick="showToast('Log sedang diekspor...','success');closeModal('modal-export')">Ekspor</button>
+      <button class="btn btn-secondary" data-close-modal="modal-export">Batal</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+<script src="js/main.js?v=2"></script>
+<script>
+function openSnap(inc) {
+  document.getElementById('snap-title').textContent = `${inc.id} — Bukti Pelanggaran`;
+  document.getElementById('snap-sub').textContent = `${inc.time} · ${inc.station} · ${inc.worker}`;
+  document.getElementById('snap-detail').textContent = `${inc.type} terdeteksi pada ${inc.time}. RFID Aktif: ${inc.uid}. Snapshot diambil otomatis oleh sistem.`;
+  
+  const imgEl = document.getElementById('snap-img');
+  const snapshotUrl = `${API_BASE_URL.replace('/api','')}${inc.snapshot}`;
+  imgEl.src = snapshotUrl;
+  imgEl.onerror = () => { imgEl.src = 'assets/welder_violation.png'; };
+  
+  openModal('modal-snapshot');
+}
+
+function buildRow(inc) {
+  const sev = {high:'danger',medium:'warning',low:'safe'}[inc.severity];
+  const sevLabel = {high:'Tinggi',medium:'Sedang',low:'Rendah'}[inc.severity];
+  const initials = inc.worker ? inc.worker.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase() : '?';
+  const snapshotUrl = `${API_BASE_URL.replace('/api','')}${inc.snapshot}`;
+  const dateStr = inc.time ? inc.time.split(' ')[0] : '';
+  
+  return `<tr data-sev="${inc.severity}" data-station="${inc.station}" data-date="${dateStr}" data-text="${(inc.worker||'').toLowerCase()} ${(inc.station||'').toLowerCase()} ${(inc.type||'').toLowerCase()}">
+    <td class="mono primary">${inc.id}</td>
+    <td class="mono">${inc.time}</td>
+    <td class="primary">${inc.station}</td>
+    <td><div class="flex items-center gap-2"><div class="avatar" style="background:rgba(249,115,22,0.15);color:var(--orange);font-size:0.65rem;">${initials}</div>${inc.worker}</div></td>
+    <td class="mono" style="color:var(--cyan);">${inc.uid || '—'}</td>
+    <td>${inc.type}</td>
+    <td><span class="badge ${sev}">${sevLabel}</span></td>
+    <td><img src="${snapshotUrl}" class="snapshot-thumb" alt="Snapshot" onerror="this.src='assets/welder_violation.png'" onclick='openSnap(${JSON.stringify(inc)})'></td>
+    <td>
+      <div class="flex gap-2">
+        <button class="icon-btn" title="Lihat Snapshot" onclick='openSnap(${JSON.stringify(inc)})'>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+    </td>
+  </tr>`;
+}
+
+window.filterIncidents = () => {
+  const search = document.getElementById('search-inc').value.toLowerCase();
+  const sev = document.getElementById('filter-sev').value;
+  const station = document.getElementById('filter-station').value;
+  const dateVal = document.getElementById('filter-date').value;
+  const rows = document.querySelectorAll('#incident-tbody tr');
+  let visible = 0;
+  rows.forEach(row => {
+    const matchText = !search || (row.dataset.text || '').includes(search);
+    const matchSev = !sev || row.dataset.sev === sev;
+    const matchSta = !station || row.dataset.station === station;
+    const matchDate = !dateVal || row.dataset.date === dateVal;
+    const show = matchText && matchSev && matchSta && matchDate;
+    row.style.display = show ? '' : 'none';
+    if (show) visible++;
+  });
+  document.getElementById('empty-state').style.display = visible === 0 ? 'block' : 'none';
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+  const tbody = document.getElementById('incident-tbody');
+  const gallery = document.getElementById('snapshot-gallery');
+  const stationFilter = document.getElementById('filter-station');
+
+  function renderIncidents() {
+    // Update KPI cards
+    const tzoffset = (new Date()).getTimezoneOffset() * 60000;
+    const todayStr = (new Date(Date.now() - tzoffset)).toISOString().split('T')[0];
+    const todayInc = INCIDENTS.filter(i => i.time && i.time.startsWith(todayStr)).length;
+    const highInc = INCIDENTS.filter(i => i.severity === 'high').length;
+    const snapshotCount = INCIDENTS.filter(i => i.snapshot).length;
+
+    document.getElementById('inc-total').textContent = INCIDENTS.length;
+    document.getElementById('inc-high').textContent = highInc;
+    document.getElementById('inc-today').textContent = todayInc;
+    document.getElementById('inc-snapshots').textContent = snapshotCount;
+
+    // Update nav badges
+    const incBadge = document.getElementById('nav-badge-inc');
+    if (incBadge) incBadge.textContent = INCIDENTS.length;
+
+    // Populate station filter dynamically
+    const existingStations = new Set(INCIDENTS.map(i => i.station).filter(Boolean));
+    const currentFilterVal = stationFilter.value;
+    stationFilter.innerHTML = '<option value="">Semua Stasiun</option>';
+    existingStations.forEach(st => {
+      stationFilter.innerHTML += `<option value="${st}" ${st === currentFilterVal ? 'selected' : ''}>${st}</option>`;
+    });
+
+    // Render table - Batasi 100 insiden terbaru agar browser tidak lag
+    const displayIncidents = INCIDENTS.slice(0, 100);
+    
+    let tableHtml = '';
+    displayIncidents.forEach(inc => tableHtml += buildRow(inc));
+    tbody.innerHTML = tableHtml;
+
+    // Render gallery
+    let galleryHtml = '';
+    displayIncidents.forEach(inc => {
+      const sevColor = {high:'var(--red)',medium:'var(--yellow)',low:'var(--green)'}[inc.severity] || 'var(--yellow)';
+      const snapshotUrl = `${API_BASE_URL.replace('/api','')}${inc.snapshot}`;
+      galleryHtml += `
+        <div style="cursor:pointer;border-radius:var(--radius);overflow:hidden;border:1px solid var(--border);background:var(--bg-card);transition:var(--transition);"
+          onmouseover="this.style.borderColor='${sevColor}';this.style.transform='translateY(-2px)'"
+          onmouseout="this.style.borderColor='';this.style.transform=''"
+          onclick='openSnap(${JSON.stringify(inc)})'>
+          <img src="${snapshotUrl}" loading="lazy" alt="snapshot" style="width:100%;aspect-ratio:16/10;object-fit:cover;" onerror="this.src='assets/welder_violation.png'">
+          <div style="padding:8px 10px;">
+            <div style="font-size:0.72rem;font-weight:700;color:${sevColor};">${inc.id}</div>
+            <div style="font-size:0.68rem;color:var(--text-muted);margin-top:2px;">${inc.station} · ${inc.time ? inc.time.split(' ')[1] : ''}</div>
+            <div style="font-size:0.7rem;color:var(--text-secondary);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${inc.type}</div>
+          </div>
+        </div>`;
+    });
+    gallery.innerHTML = galleryHtml;
+
+    // Re-apply filters
+    filterIncidents();
+  }
+
+  // Start WebSocket/Polling from backend
+  if (typeof startDataPolling === 'function') {
+    startDataPolling(renderIncidents, 2000);
+  } else {
+    renderIncidents();
+  }
+});
+</script>
+</body>
+</html>

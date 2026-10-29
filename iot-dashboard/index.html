@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WeldGuard IoT — Overview</title>
+<meta name="description" content="Dashboard pemantauan keselamatan stasiun las berbasis IoT dengan RFID, deteksi APD, dan logging insiden.">
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <img src="assets/iot_logo.png" alt="WeldGuard Logo">
+    <div class="sidebar-logo-text">
+      <h1>WeldGuard</h1>
+      <p>IoT Safety System</p>
+    </div>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Menu Utama</div>
+    <a class="nav-item active" href="index.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      Overview
+    </a>
+    <a class="nav-item" href="live-monitoring.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 10l4.553-2.069A1 1 0 0121 8.87v6.26a1 1 0 01-1.447.9L15 14"/><rect x="1" y="6" width="15" height="12" rx="2"/></svg>
+      Live Monitoring
+      <span class="nav-badge" id="nav-badge-cam">0</span>
+    </a>
+    <a class="nav-item" href="incident-log.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      Log Insiden
+      <span class="nav-badge" id="nav-badge-inc">0</span>
+    </a>
+    <a class="nav-item" href="worker-management.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+      Manajemen Pekerja
+    </a>
+  </div>
+
+  <div class="sidebar-footer">
+    <div class="sidebar-clock" id="clock">00:00:00</div>
+    <div class="sidebar-date" id="clock-date">Memuat...</div>
+    <div class="live-indicator">
+      <span class="live-dot"></span> Menghubungkan...
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main-wrapper">
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div>
+      <div class="topbar-title">📊 Overview Dashboard</div>
+      <div class="topbar-subtitle">Pantau seluruh stasiun las secara sekilas</div>
+    </div>
+    <div class="topbar-spacer"></div>
+    <div class="status-badge online">
+      <span class="dot"></span> Sistem Online
+    </div>
+    <button class="topbar-btn" onclick="showToast('Data diperbarui!','success')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+      Refresh
+    </button>
+    <button class="topbar-btn primary" onclick="openModal('modal-report')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      Laporan Harian
+    </button>
+  </header>
+
+  <!-- CONTENT -->
+  <main class="content">
+
+    <!-- ACTIVE ALERTS -->
+    <div class="page-section" id="alert-section">
+      <!-- Alerts will be dynamically rendered here by JS -->
+    </div>
+
+    <!-- KPI CARDS -->
+    <div class="page-section">
+      <h2 class="section-heading">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        Statistik Hari Ini
+      </h2>
+      <div class="grid-4" style="gap:14px;">
+
+        <div class="kpi-card orange">
+          <div class="kpi-icon orange">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+          </div>
+          <div class="kpi-value" id="kpi-active">0</div>
+          <div class="kpi-label">Stasiun Aktif</div>
+          <div class="kpi-change up" id="kpi-active-change">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px"><polyline points="18 15 12 9 6 15"/></svg>
+            <span id="kpi-active-txt">0 dari 0 stasiun</span>
+          </div>
+        </div>
+
+        <div class="kpi-card red">
+          <div class="kpi-icon red">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          </div>
+          <div class="kpi-value" id="kpi-incidents">0</div>
+          <div class="kpi-label">Insiden Hari Ini</div>
+          <div class="kpi-change down" id="kpi-incidents-change">
+            <span id="kpi-incidents-txt">0 insiden tercatat</span>
+          </div>
+        </div>
+
+        <div class="kpi-card green">
+          <div class="kpi-icon green">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <div class="kpi-value" id="kpi-compliance">0<span style="font-size:1.2rem">%</span></div>
+          <div class="kpi-label">Safety Score</div>
+          <div class="kpi-change up" id="kpi-compliance-change">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px"><polyline points="18 15 12 9 6 15"/></svg>
+            <span id="kpi-compliance-txt">Kepatuhan K3</span>
+          </div>
+        </div>
+
+        <div class="kpi-card cyan">
+          <div class="kpi-icon cyan">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+          </div>
+          <div class="kpi-value" id="kpi-workers">0</div>
+          <div class="kpi-label">Operator Aktif</div>
+          <div class="kpi-change neutral" id="kpi-workers-change">
+            <span id="kpi-workers-txt">Sesi aktif berjalan</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- STATION STATUS + TREND CHART -->
+    <div class="grid-2" style="align-items:start; margin-bottom:28px;">
+
+      <!-- STATION STATUS GRID -->
+      <div>
+        <h2 class="section-heading">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93A10 10 0 115 19.07"/></svg>
+          Status Stasiun Live
+        </h2>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px" id="stations-grid">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+
+      <!-- TREND CHART -->
+      <div>
+        <h2 class="section-heading">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          Tren Pelanggaran K3 (7 Hari)
+        </h2>
+        <div class="card" style="padding:16px;">
+          <div class="chart-container" style="height:220px;">
+            <canvas id="trendChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIOLATION BREAKDOWN + COMPLIANCE -->
+    <div class="grid-2" style="align-items:start; margin-bottom:28px;">
+
+      <!-- VIOLATION TYPES -->
+      <div>
+        <h2 class="section-heading">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+          Jenis Pelanggaran (Bulan Ini)
+        </h2>
+        <div class="card" style="padding:20px;">
+          <div style="display:flex;flex-direction:column;gap:14px;" id="violation-types-list">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- COMPLIANCE RING + TOP VIOLATORS -->
+      <div>
+        <h2 class="section-heading">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          Ringkasan Kepatuhan
+        </h2>
+        <div class="card" style="padding:20px;">
+          <div class="flex items-center gap-3" style="margin-bottom:20px;">
+            <div class="ring-container">
+              <svg width="100" height="100" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="40" fill="none" stroke="var(--bg-card-alt)" stroke-width="10"/>
+                <circle id="ring-circle" cx="50" cy="50" r="40" fill="none" stroke="var(--green)" stroke-width="10"
+                  stroke-dasharray="251.2" stroke-dashoffset="55" stroke-linecap="round"
+                  transform="rotate(-90 50 50)"/>
+              </svg>
+              <div class="ring-label">
+                <div class="ring-pct" id="ring-pct">78%</div>
+                <div class="ring-sub">compliance</div>
+              </div>
+            </div>
+            <div style="flex:1;">
+              <div class="fs-sm text-muted mb-2">Distribusi Status Hari Ini</div>
+              <div style="display:flex;flex-direction:column;gap:8px;" id="compliance-distribution">
+                <!-- Rendered by JS -->
+              </div>
+            </div>
+          </div>
+          <hr class="divider" style="margin:12px 0;">
+          <div class="fs-sm text-muted mb-2 fw-bold">Top Pelanggaran Operator</div>
+          <div style="display:flex;flex-direction:column;gap:8px;" id="top-violators-list">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RECENT INCIDENTS TABLE -->
+    <div class="page-section">
+      <div class="flex justify-between items-center mb-3">
+        <h2 class="section-heading" style="margin-bottom:0;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          Insiden Terakhir
+        </h2>
+        <a href="incident-log.html" class="btn btn-secondary btn-sm">Lihat Semua →</a>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Waktu</th>
+              <th>Stasiun</th>
+              <th>Operator</th>
+              <th>Jenis Pelanggaran</th>
+              <th>Tingkat</th>
+              <th>Bukti</th>
+            </tr>
+          </thead>
+          <tbody id="recent-incidents-tbody">
+            <!-- Rendered by JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- MODAL: LAPORAN -->
+<div class="modal-overlay" id="modal-report">
+  <div class="modal" style="max-width:500px;">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">📄 Ekspor Laporan Harian</div>
+        <div class="modal-subtitle">Pilih rentang dan format laporan</div>
+      </div>
+      <button class="modal-close" data-close-modal="modal-report">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Tanggal Mulai</label>
+      <input type="date" class="form-input" value="2026-05-10">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Tanggal Selesai</label>
+      <input type="date" class="form-input" value="2026-05-10">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Format Ekspor</label>
+      <select class="form-input">
+        <option>PDF — Laporan Formal</option>
+        <option>Excel (XLSX)</option>
+        <option>CSV</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Sertakan</label>
+      <select class="form-input">
+        <option>Semua Data (Log + Foto + Statistik)</option>
+        <option>Hanya Log Insiden</option>
+        <option>Hanya Statistik KPI</option>
+      </select>
+    </div>
+    <div class="flex gap-2" style="margin-top:8px;">
+      <button class="btn btn-primary" onclick="showToast('Laporan sedang diproses...','success');closeModal('modal-report')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Ekspor Laporan
+      </button>
+      <button class="btn btn-secondary" data-close-modal="modal-report">Batal</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: SNAPSHOT -->
+<div class="modal-overlay" id="modal-snapshot">
+  <div class="modal" style="max-width:580px;">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="snap-title">Bukti Insiden</div>
+        <div class="modal-subtitle" id="snap-subtitle">—</div>
+      </div>
+      <button class="modal-close" data-close-modal="modal-snapshot">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <img src="assets/welder_violation.png" alt="Snapshot Pelanggaran" style="width:100%;border-radius:var(--radius);border:1px solid var(--border);margin-bottom:16px;">
+    <div class="alert-banner danger" style="margin:0;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <div class="alert-text" id="snap-detail">Snapshot diambil otomatis oleh sistem saat anomali terdeteksi.</div>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+<script src="js/main.js?v=2"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const grid = document.getElementById('stations-grid');
+  const tbody = document.getElementById('recent-incidents-tbody');
+  
+  function renderOverview() {
+    // 1. Calculate & Update KPIs
+    const kpis = calcKPIs();
+    document.getElementById('kpi-active').textContent = kpis.activeStations;
+    document.getElementById('kpi-active-txt').textContent = `${kpis.activeStations} dari ${kpis.totalStations} stasiun`;
+    
+    document.getElementById('kpi-incidents').textContent = kpis.todayIncidents;
+    document.getElementById('kpi-incidents-txt').textContent = `${kpis.todayIncidents} insiden tercatat`;
+    
+    document.getElementById('kpi-compliance').innerHTML = `${kpis.safetyScore}<span style="font-size:1.2rem">%</span>`;
+    
+    document.getElementById('kpi-workers').textContent = kpis.activeWorkers;
+    document.getElementById('kpi-workers-txt').textContent = `${kpis.activeWorkers} operator aktif`;
+
+    // Update nav badges
+    const navCam = document.getElementById('nav-badge-cam');
+    const navInc = document.getElementById('nav-badge-inc');
+    if (navCam) navCam.textContent = kpis.activeStations;
+    if (navInc) navInc.textContent = INCIDENTS.length;
+
+    // 2. Active Alert Banners (Dynamic)
+    const alertSection = document.getElementById('alert-section');
+    if (alertSection) {
+      alertSection.innerHTML = '';
+      const dangerStations = STATIONS.filter(s => s.status === 'danger');
+      if (dangerStations.length > 0) {
+        dangerStations.forEach(s => {
+          const missingApd = [];
+          if (!s.helm) missingApd.push("Kacamata las");
+          const missingText = missingApd.join(", ") || "APD tidak lengkap";
+          
+          alertSection.innerHTML += `
+            <div class="alert-banner danger">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <div class="alert-text"><strong>PELANGGARAN AKTIF:</strong> ${s.id} — ${s.worker} | ${missingText} terdeteksi!</div>
+              <span class="alert-time">Baru saja</span>
+            </div>`;
+        });
+      } else {
+        alertSection.innerHTML = `
+          <div class="alert-banner success" style="background: rgba(34,197,94,0.1); border-color: rgba(34,197,94,0.2); color: var(--green);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            <div class="alert-text" style="color: var(--green);"><strong>SEMUA AMAN:</strong> Seluruh stasiun las beroperasi sesuai protokol keselamatan K3.</div>
+            <span class="alert-time">Aktif</span>
+          </div>`;
+      }
+    }
+
+    // 3. Compliance Ring
+    const ringCircle = document.getElementById('ring-circle');
+    const ringPct = document.getElementById('ring-pct');
+    const distContainer = document.getElementById('compliance-distribution');
+    
+    if (ringPct) ringPct.textContent = `${kpis.safetyScore}%`;
+    if (ringCircle) {
+      const offset = 251.2 - (251.2 * kpis.safetyScore / 100);
+      ringCircle.style.strokeDashoffset = offset;
+    }
+    
+    if (distContainer) {
+      const safeCount = STATIONS.filter(s => s.status === 'safe').length;
+      const dangerCount = STATIONS.filter(s => s.status === 'danger').length;
+      const idleCount = STATIONS.filter(s => s.status === 'idle').length;
+      
+      distContainer.innerHTML = `
+        <div class="flex items-center gap-2 fs-sm"><span style="width:10px;height:10px;border-radius:2px;background:var(--green);display:inline-block;"></span><span class="text-primary fw-bold">${safeCount} Stasiun</span><span class="text-muted ml-auto">Aman</span></div>
+        <div class="flex items-center gap-2 fs-sm"><span style="width:10px;height:10px;border-radius:2px;background:var(--red);display:inline-block;"></span><span class="text-primary fw-bold">${dangerCount} Stasiun</span><span class="text-muted ml-auto">Pelanggaran</span></div>
+        <div class="flex items-center gap-2 fs-sm"><span style="width:10px;height:10px;border-radius:2px;background:var(--text-muted);display:inline-block;"></span><span class="text-primary fw-bold">${idleCount} Stasiun</span><span class="text-muted ml-auto">Mesin Mati</span></div>
+      `;
+    }
+
+    // 4. Violation Types Breakdown
+    const typesContainer = document.getElementById('violation-types-list');
+    if (typesContainer) {
+      let helmetCount = 0;
+      let otherCount = 0;
+      
+      INCIDENTS.forEach(inc => {
+        const typeLower = (inc.type || "").toLowerCase();
+        if (typeLower.includes("helmet") || typeLower.includes("helm") || typeLower.includes("kacamata") || typeLower.includes("face_shield") || typeLower.includes("glasses") || typeLower.includes("wajah")) {
+          helmetCount++;
+        } else {
+          otherCount++;
+        }
+      });
+      
+      const total = helmetCount + otherCount || 1;
+      const pctHelm = Math.round(helmetCount / total * 100);
+      const pctOther = Math.round(otherCount / total * 100);
+      
+      typesContainer.innerHTML = `
+        <div>
+          <div class="flex justify-between fs-sm mb-2"><span class="text-primary fw-bold">Kacamata Las Tidak Terpakai</span><span class="font-mono text-orange">${helmetCount}</span></div>
+          <div class="progress-bar-wrap"><div class="progress-bar" style="width:${pctHelm}%;background:var(--orange)"></div></div>
+        </div>
+        ${otherCount > 0 ? `
+        <div>
+          <div class="flex justify-between fs-sm mb-2"><span class="text-primary fw-bold">Pelanggaran Lainnya</span><span class="font-mono" style="color:var(--yellow)">${otherCount}</span></div>
+          <div class="progress-bar-wrap"><div class="progress-bar" style="width:${pctOther}%;background:var(--yellow)"></div></div>
+        </div>
+        ` : ''}
+      `;
+    }
+
+    // 5. Top Violators List
+    const violatorsContainer = document.getElementById('top-violators-list');
+    if (violatorsContainer) {
+      const counts = {};
+      INCIDENTS.forEach(inc => {
+        if (inc.worker) {
+          counts[inc.worker] = (counts[inc.worker] || 0) + 1;
+        }
+      });
+      
+      const sortedViolators = Object.keys(counts).map(name => ({
+        name: name,
+        count: counts[name],
+        station: INCIDENTS.find(i => i.worker === name)?.station || '-'
+      })).sort((a, b) => b.count - a.count).slice(0, 3);
+      
+      violatorsContainer.innerHTML = '';
+      if (sortedViolators.length > 0) {
+        sortedViolators.forEach(v => {
+          const initials = v.name.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
+          const badgeClass = v.count >= 4 ? 'danger' : 'warning';
+          const badgeLabel = v.count >= 4 ? 'Tinggi' : 'Sedang';
+          
+          violatorsContainer.innerHTML += `
+            <div class="flex items-center gap-2">
+              <div class="avatar" style="background:rgba(249,115,22,0.15);color:var(--orange);font-weight:700;display:flex;align-items:center;justify-content:center;">${initials}</div>
+              <div style="flex:1;">
+                <div class="fs-sm text-primary fw-bold">${v.name}</div>
+                <div style="font-size:0.72rem;color:var(--text-muted);">${v.station} · ${v.count} insiden</div>
+              </div>
+              <span class="badge ${badgeClass}">${badgeLabel}</span>
+            </div>`;
+        });
+      } else {
+        violatorsContainer.innerHTML = `<div class="fs-sm text-muted">Belum ada catatan insiden</div>`;
+      }
+    }
+
+    // 6. Station Status Grid
+    grid.innerHTML = '';
+    STATIONS.forEach(s => {
+      const statusLabel = { safe:'Aman', danger:'Pelanggaran', idle:'Mesin Mati' }[s.status] || s.status;
+      const ppeRow = s.machine === 'ON'
+        ? `<div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:6px;">
+            <span class="camera-ppe-tag ${s.helm  ? 'ok':'missing'}">👓 Kacamata Las</span>
+           </div>`
+        : `<div style="margin-top:6px;font-size:0.72rem;color:var(--text-muted);">Tidak ada sesi aktif</div>`;
+  
+      grid.innerHTML += `
+        <div class="station-card ${s.status}">
+          <div class="flex justify-between items-center">
+            <span class="badge ${s.status === 'safe' ? 'safe' : s.status === 'danger' ? 'danger' : 'idle'}">
+              <span class="dot"></span>${statusLabel}
+            </span>
+            <span class="badge ${s.machine==='ON'?'info':'idle'}">${s.machine}</span>
+          </div>
+          <div style="margin-top:10px;">
+            <div style="font-size:0.9rem;font-weight:700;color:var(--text-primary);">${s.id}</div>
+            <div style="font-size:0.75rem;color:var(--text-muted);margin-top:2px;">${s.worker || 'Tidak ada operator'}</div>
+          </div>
+          ${ppeRow}
+        </div>`;
+    });
+
+    // 7. Recent Incidents Table
+    tbody.innerHTML = '';
+    INCIDENTS.slice(0, 3).forEach(inc => {
+      const sev = {high:'danger',medium:'warning',low:'safe'}[inc.severity] || 'warning';
+      const sevLabel = {high:'Tinggi',medium:'Sedang',low:'Rendah'}[inc.severity] || inc.severity;
+      const ts = inc.time ? inc.time.split(' ')[1] : '';
+      const wInitials = inc.worker ? inc.worker.split(' ').map(w=>w[0]).join('').substring(0, 2).toUpperCase() : '';
+      
+      tbody.innerHTML += `
+        <tr>
+          <td class="mono">${ts}</td>
+          <td class="primary">${inc.station}</td>
+          <td>
+            <div class="flex items-center gap-2">
+              <div class="avatar" style="background:rgba(249,115,22,0.15);color:var(--orange);font-size:0.65rem;font-weight:700;display:flex;align-items:center;justify-content:center;">${wInitials}</div>
+              ${inc.worker}
+            </div>
+          </td>
+          <td>${inc.type}</td>
+          <td><span class="badge ${sev}">${sevLabel}</span></td>
+          <td>
+            <img src="${API_BASE_URL.replace('/api','')}${inc.snapshot}" class="snapshot-thumb" alt="Snapshot" onerror="this.src='assets/welder_violation.png'"
+              onclick="document.getElementById('snap-title').textContent='${inc.id} — Bukti Pelanggaran';document.getElementById('snap-subtitle').textContent='${inc.time} · ${inc.station} · ${inc.worker}';document.getElementById('snap-detail').textContent='${inc.type} terdeteksi pada ${inc.time}.';openModal('modal-snapshot')">
+          </td>
+        </tr>`;
+    });
+
+    // 8. Update Trend Chart
+    updateTrendChart();
+  }
+
+  function updateTrendChart() {
+    const days = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
+    // Map JS day (0-6, Sunday is 0) to labels index (Monday is 0, Sunday is 6)
+    const mapDayIndex = (d) => d === 0 ? 6 : d - 1;
+    
+    const helmetData = [0,0,0,0,0,0,0];
+    const otherData = [0,0,0,0,0,0,0];
+    
+      INCIDENTS.forEach(inc => {
+      if (!inc.time) return;
+      // parse "YYYY-MM-DD HH:MM:SS"
+      const parts = inc.time.split(' ');
+      const datePart = parts[0];
+      const d = new Date(datePart);
+      if (isNaN(d.getTime())) return;
+      const dayIdx = mapDayIndex(d.getDay());
+      
+      const typeLower = (inc.type || "").toLowerCase();
+      if (typeLower.includes("helmet") || typeLower.includes("helm") || typeLower.includes("kacamata") || typeLower.includes("face_shield") || typeLower.includes("glasses") || typeLower.includes("wajah")) {
+        helmetData[dayIdx]++;
+      } else {
+        otherData[dayIdx]++;
+      }
+    });
+
+    if (window.trendChartInstance) {
+      window.trendChartInstance.data.datasets[0].data = helmetData;
+      window.trendChartInstance.data.datasets[1].data = otherData;
+      window.trendChartInstance.update();
+    }
+  }
+
+  // Start WebSocket/Polling from backend
+  if (typeof startDataPolling === 'function') {
+    startDataPolling(renderOverview, 2000);
+  } else {
+    renderOverview();
+  }
+
+  // Trend Chart Init
+  const ctx = document.getElementById('trendChart').getContext('2d');
+  const labels = ['Senin','Selasa','Rabu','Kamis','Jumat','Sabtu','Minggu'];
+  window.trendChartInstance = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'Kacamata Las',
+          data: [0,0,0,0,0,0,0],
+          backgroundColor: 'rgba(249,115,22,0.75)',
+          borderRadius: 5, borderSkipped: false,
+        },
+        {
+          label: 'Lainnya',
+          data: [0,0,0,0,0,0,0],
+          backgroundColor: 'rgba(6,182,212,0.65)',
+          borderRadius: 5, borderSkipped: false,
+        },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { labels: { color: '#8899bb', font: { family: 'Inter', size: 11 }, boxWidth: 12, padding: 12 } },
+        tooltip: {
+          backgroundColor: '#131c2e',
+          borderColor: 'rgba(99,130,190,0.25)',
+          borderWidth: 1,
+          titleColor: '#e8edf7',
+          bodyColor: '#8899bb',
+        }
+      },
+      scales: {
+        x: { stacked: true, grid: { color: 'rgba(99,130,190,0.08)' }, ticks: { color: '#4a5980', font: { family: 'Inter', size: 11 } } },
+        y: { stacked: true, grid: { color: 'rgba(99,130,190,0.08)' }, ticks: { color: '#4a5980', font: { family: 'Inter', size: 11 }, stepSize: 1 } }
+      }
+    }
+  });
+});
+</script>
+</body>
+</html>

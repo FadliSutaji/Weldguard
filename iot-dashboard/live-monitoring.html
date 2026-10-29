@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WeldGuard IoT — Live Monitoring</title>
+<meta name="description" content="Pemantauan kamera real-time seluruh stasiun las dengan deteksi APD berbasis AI.">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <img src="assets/iot_logo.png" alt="WeldGuard Logo">
+    <div class="sidebar-logo-text"><h1>WeldGuard</h1><p>IoT Safety System</p></div>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Menu Utama</div>
+    <a class="nav-item" href="index.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Overview</a>
+    <a class="nav-item active" href="live-monitoring.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 10l4.553-2.069A1 1 0 0121 8.87v6.26a1 1 0 01-1.447.9L15 14"/><rect x="1" y="6" width="15" height="12" rx="2"/></svg>Live Monitoring
+      <span class="nav-badge" id="nav-badge-cam">0</span>
+    </a>
+    <a class="nav-item" href="incident-log.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Log Insiden
+      <span class="nav-badge" id="nav-badge-inc">0</span>
+    </a>
+    <a class="nav-item" href="worker-management.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>Manajemen Pekerja</a>
+  </div>
+  <div class="sidebar-footer">
+    <div class="sidebar-clock" id="clock">00:00:00</div>
+    <div class="sidebar-date" id="clock-date">Memuat...</div>
+    <div class="live-indicator"><span class="live-dot"></span> Menghubungkan...</div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main-wrapper">
+  <header class="topbar">
+    <div>
+      <div class="topbar-title">📹 Live Monitoring</div>
+      <div class="topbar-subtitle">Feed kamera real-time seluruh stasiun las</div>
+    </div>
+    <div class="topbar-spacer"></div>
+    <div class="status-badge online" id="cam-status-badge"><span class="dot"></span> <span id="cam-count-text">0 Kamera Aktif</span></div>
+    <select class="filter-select" style="margin-left:8px;" onchange="filterStations(this.value)">
+      <option value="all">Semua Stasiun</option>
+      <option value="safe">Hanya Aman</option>
+      <option value="danger">Hanya Pelanggaran</option>
+      <option value="idle">Hanya Idle</option>
+    </select>
+  </header>
+
+  <main class="content">
+
+    <!-- ACTIVE VIOLATION BANNER -->
+    <div style="margin-bottom:20px;" id="violation-banner">
+      <!-- Dynamic — rendered by JS -->
+    </div>
+
+    <!-- CAMERA GRID -->
+    <div class="page-section">
+      <h2 class="section-heading">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 10l4.553-2.069A1 1 0 0121 8.87v6.26a1 1 0 01-1.447.9L15 14"/><rect x="1" y="6" width="15" height="12" rx="2"/></svg>
+        Feed Kamera Stasiun
+      </h2>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(500px, 1fr));gap:20px;" id="camera-grid">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+
+    <!-- DETAIL TABLE -->
+    <div class="page-section">
+      <h2 class="section-heading">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        Detail Status Operator per Stasiun
+      </h2>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Stasiun</th><th>Operator</th><th>UID</th><th>Mesin</th><th>👓 Kacamata Las</th><th>Status APD</th><th>Relay</th><th>Aksi</th>
+          </tr>
+        </thead>
+        <tbody id="detail-tbody">
+          <!-- Rendered by JS -->
+        </tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<!-- MODAL: STATION DETAIL -->
+<div class="modal-overlay" id="modal-station">
+  <div class="modal" style="max-width:620px;">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="modal-station-title">Detail Stasiun</div>
+        <div class="modal-subtitle" id="modal-station-sub">—</div>
+      </div>
+      <button class="modal-close" data-close-modal="modal-station">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <img id="modal-station-img" src="assets/station_idle.png" alt="Feed Stasiun" style="width:100%;border-radius:var(--radius);border:1px solid var(--border);margin-bottom:16px;">
+    <div id="modal-station-body">
+      <!-- Dynamic APD cards rendered by JS -->
+    </div>
+    <div class="flex gap-2" style="margin-top:16px;">
+      <button id="modal-relay-btn" class="btn btn-primary btn-sm" onclick="">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="2" x2="12" y2="12"/></svg>
+        Toggle Relay
+      </button>
+      <button class="btn btn-secondary btn-sm" data-close-modal="modal-station">Tutup</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+<script src="js/main.js"></script>
+<script>
+// Pindahkan fungsi ke sini untuk menghindari error cache browser
+async function sendRelayCommand(stationId, command) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/relay/${stationId}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ command: command })
+    });
+    return await res.json();
+  } catch (err) {
+    console.error("Gagal mengirim perintah relay", err);
+    return { status: "error", message: err.message };
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const cGrid = document.getElementById('camera-grid');
+  const dTbody = document.getElementById('detail-tbody');
+  const banner = document.getElementById('violation-banner');
+
+  function buildCamera(s) {
+    const alertHtml = s.status === 'danger'
+      ? `<div class="camera-alert">⚠️ PELANGGARAN: APD Tidak Lengkap</div>` : '';
+
+    const ppeTags = s.machine === 'ON'
+      ? `<span class="camera-ppe-tag ${s.helm?'ok':'missing'}">👓 ${s.helm?'OK':'!'}</span>`
+      : `<span class="camera-ppe-tag na">Tidak ada sesi</span>`;
+
+    const imgSrc = s.machine === 'ON'
+      ? `${API_BASE_URL.replace('/api', '')}/api/video_feed/${s.id}`
+      : 'assets/station_idle.png';
+
+    return `
+      <div class="camera-feed" id="cam-${s.id}" style="cursor:pointer;" onclick="showStationModal('${s.id}')">
+        ${alertHtml}
+        <img src="${imgSrc}" alt="${s.id}" onerror="this.src='assets/station_idle.png'">
+        <div class="camera-rec"><span class="dot"></span>${s.machine === 'ON' ? 'REC' : 'OFF'}</div>
+        <div class="camera-ts" id="ts-${s.id}">00:00:00</div>
+        <div class="camera-overlay">
+          <div class="camera-label">${s.id} · ${s.name}</div>
+          <div class="camera-status-bar">
+            <span class="badge ${s.status==='safe'?'safe':s.status==='danger'?'danger':'idle'}" style="font-size:0.65rem;padding:2px 6px;">
+              <span class="dot"></span>${s.status==='safe'?'AMAN':s.status==='danger'?'PELANGGARAN':'IDLE'}
+            </span>
+            ${ppeTags}
+          </div>
+          <div style="font-size:0.72rem;color:#e8edf7;margin-top:4px;">👤 ${s.worker || 'Tidak ada operator'}</div>
+        </div>
+      </div>`;
+  }
+
+  function buildDetailRow(s) {
+    const ckY = `<span style="color:var(--green);font-size:1rem;">✅</span>`;
+    const ckN = `<span style="color:var(--red);font-size:1rem;">❌</span>`;
+    const allOk = s.machine === 'ON' && s.helm;
+    const apdStatus = s.machine === 'OFF'
+      ? `<span class="badge idle">N/A</span>`
+      : allOk
+        ? `<span class="badge safe">Aman</span>`
+        : `<span class="badge danger">APD Kurang</span>`;
+
+    const relayChecked = s.machine === 'ON' ? 'checked' : '';
+    const relayLabel = s.machine === 'ON' ? 'ON' : 'OFF';
+    const relayClass = s.machine === 'ON' ? 'on' : 'off';
+
+    return `
+      <tr id="row-${s.id}">
+        <td class="primary fw-bold">${s.id}</td>
+        <td>
+          ${s.worker && s.worker !== 'Menunggu RFID...'
+            ? `<div class="flex items-center gap-2"><div class="avatar" style="background:rgba(249,115,22,0.15);color:var(--orange);font-size:0.65rem;">
+               ${s.worker.split(' ').map(w=>w[0]).join('')}</div>${s.worker}</div>`
+            : '<span class="text-muted">Menunggu RFID...</span>'}
+        </td>
+        <td class="mono">${s.uid || '—'}</td>
+        <td><span class="badge ${s.machine==='ON'?'info':'idle'}">${s.machine}</span></td>
+        <td>${s.machine==='ON' ? (s.helm?ckY:ckN) : '–'}</td>
+        <td>${apdStatus}</td>
+        <td>
+          <div class="relay-label ${relayClass}">
+            <label class="toggle-switch">
+              <input type="checkbox" ${relayChecked} onchange="toggleRelay('${s.id}', this.checked)">
+              <span class="toggle-slider"></span>
+            </label>
+            <span>${relayLabel}</span>
+          </div>
+        </td>
+        <td>
+          <div class="flex gap-2">
+            <button class="icon-btn" title="Lihat Detail" onclick="showStationModal('${s.id}')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            </button>
+          </div>
+        </td>
+      </tr>`;
+  }
+
+  function updateViolationBanner() {
+    const dangerStations = STATIONS.filter(s => s.status === 'danger');
+    if (dangerStations.length > 0) {
+      banner.innerHTML = dangerStations.map(s => {
+        const missing = [];
+        if (!s.helm) missing.push('Kacamata Las');
+        const missingText = missing.join(', ') || 'APD tidak lengkap';
+        return `
+          <div class="alert-banner danger" style="margin-bottom:8px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <div class="alert-text">⚠️ <strong>${s.id}</strong> — ${s.worker || 'Operator'} | ${missingText} tidak terdeteksi</div>
+            <span class="alert-time">${new Date().toLocaleTimeString('id-ID')}</span>
+          </div>`;
+      }).join('');
+    } else if (STATIONS.length > 0) {
+      banner.innerHTML = `
+        <div class="alert-banner success" style="background:rgba(34,197,94,0.1);border-color:rgba(34,197,94,0.2);color:var(--green);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          <div class="alert-text" style="color:var(--green);"><strong>SEMUA AMAN:</strong> Seluruh stasiun beroperasi sesuai protokol K3.</div>
+          <span class="alert-time">Aktif</span>
+        </div>`;
+    } else {
+      banner.innerHTML = `
+        <div class="alert-banner warning" style="background:rgba(234,179,8,0.1);border-color:rgba(234,179,8,0.2);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <div class="alert-text">Menunggu data dari backend...</div>
+        </div>`;
+    }
+  }
+
+  function renderStations() {
+    // Update camera count badge
+    const activeCams = STATIONS.filter(s => s.machine === 'ON').length;
+    const camCountEl = document.getElementById('cam-count-text');
+    const navBadge = document.getElementById('nav-badge-cam');
+    const incBadge = document.getElementById('nav-badge-inc');
+    if (camCountEl) camCountEl.textContent = `${activeCams} Kamera Aktif`;
+    if (navBadge) navBadge.textContent = activeCams;
+    if (incBadge) incBadge.textContent = INCIDENTS.length;
+
+    // Update violation banner
+    updateViolationBanner();
+
+    STATIONS.forEach(s => {
+      // 1. Camera Grid Update
+      let camCard = document.getElementById(`cam-${s.id}`);
+      if (!camCard) {
+        cGrid.insertAdjacentHTML('beforeend', buildCamera(s));
+      } else {
+        // Only update overlay/status, don't touch <img> to avoid breaking video stream
+        const overlay = camCard.querySelector('.camera-overlay');
+        const alertTag = camCard.querySelector('.camera-alert');
+
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = buildCamera(s);
+
+        const newOverlay = tempDiv.querySelector('.camera-overlay');
+        if (newOverlay && overlay) overlay.innerHTML = newOverlay.innerHTML;
+
+        // Handle alert toggle
+        const newAlert = tempDiv.querySelector('.camera-alert');
+        if (newAlert && !alertTag) camCard.insertAdjacentHTML('afterbegin', newAlert.outerHTML);
+        else if (!newAlert && alertTag) alertTag.remove();
+      }
+
+      // 2. Table Detail Update
+      let tr = document.getElementById(`row-${s.id}`);
+      if (!tr) {
+        dTbody.insertAdjacentHTML('beforeend', buildDetailRow(s));
+      } else {
+        const tempTable = document.createElement('table');
+        tempTable.innerHTML = `<tbody>${buildDetailRow(s)}</tbody>`;
+        tr.innerHTML = tempTable.querySelector('tr').innerHTML;
+      }
+    });
+
+    // Restore filter if applied
+    const filterSelect = document.querySelector('.filter-select');
+    if (filterSelect) filterStations(filterSelect.value);
+  }
+
+  // Start WebSocket polling from backend
+  if (typeof startDataPolling === 'function') {
+    startDataPolling(renderStations, 2000);
+  } else {
+    renderStations();
+  }
+
+  // Live timestamps
+  setInterval(() => {
+    STATIONS.forEach(s => {
+      const el = document.getElementById(`ts-${s.id}`);
+      if (el) el.textContent = new Date().toLocaleTimeString('id-ID');
+    });
+  }, 1000);
+
+  // === Relay Toggle ===
+  window.toggleRelay = async (stationId, isOn) => {
+    const command = isOn ? 'on' : 'off';
+    showToast(`Mengirim perintah relay ${stationId} → ${command.toUpperCase()}...`, 'warning');
+    try {
+      const result = await sendRelayCommand(stationId, command);
+      if (result.status === 'success') {
+        showToast(`✅ Relay ${stationId} berhasil diset ke ${command.toUpperCase()}`, 'success');
+      } else {
+        showToast(`❌ Gagal mengubah relay ${stationId}: ${result.message || 'Unknown error'}`, 'danger');
+      }
+    } catch (err) {
+      showToast(`❌ Gagal mengirim perintah relay: ${err.message}`, 'danger');
+    }
+  };
+
+  // === Station Detail Modal ===
+  window.showStationModal = (id) => {
+    const s = STATIONS.find(x => x.id === id);
+    if (!s) return;
+    document.getElementById('modal-station-title').textContent = `${s.id} — ${s.name}`;
+    document.getElementById('modal-station-sub').textContent = `Operator: ${s.worker || 'Tidak ada'} · Mesin: ${s.machine}`;
+
+    const staticImg = s.status === 'idle' ? 'assets/station_idle.png' : s.status === 'danger' ? 'assets/welder_violation.png' : 'assets/welder_safe.png';
+    const imgSrc = s.machine === 'ON' ? `${API_BASE_URL.replace('/api', '')}/api/video_feed/${s.id}` : staticImg;
+    const imgEl = document.getElementById('modal-station-img');
+    imgEl.src = imgSrc;
+    imgEl.onerror = () => { imgEl.src = staticImg; };
+
+    const ckY = `<span style="color:var(--green)">✅ Terdeteksi</span>`;
+    const ckN = `<span style="color:var(--red)">❌ Tidak Terdeteksi</span>`;
+
+    const relayChecked = s.machine === 'ON' ? 'checked' : '';
+    const relayLabel = s.machine === 'ON' ? 'ON' : 'OFF';
+    const relayClass = s.machine === 'ON' ? 'on' : 'off';
+
+    document.getElementById('modal-station-body').innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:0.85rem;">
+        <div class="card" style="padding:14px;"><div class="text-muted fs-sm">👓 Kacamata Las</div><div style="margin-top:4px;">${s.machine==='ON'?(s.helm?ckY:ckN):'—'}</div></div>
+        <div class="card" style="padding:14px;"><div class="text-muted fs-sm">🪪 RFID UID</div><div style="margin-top:4px;font-family:monospace;color:var(--cyan);">${s.uid||'—'}</div></div>
+        <div class="card" style="padding:14px;">
+          <div class="text-muted fs-sm">🔌 Relay Mesin</div>
+          <div style="margin-top:8px;">
+            <div class="relay-label ${relayClass}">
+              <label class="toggle-switch">
+                <input type="checkbox" ${relayChecked} onchange="toggleRelay('${s.id}', this.checked)">
+                <span class="toggle-slider"></span>
+              </label>
+              <span>${relayLabel}</span>
+            </div>
+          </div>
+        </div>
+      </div>`;
+
+    // Modal relay button
+    const relayBtn = document.getElementById('modal-relay-btn');
+    const nextState = s.machine === 'ON' ? 'off' : 'on';
+    relayBtn.className = s.machine === 'ON' ? 'btn btn-danger btn-sm' : 'btn btn-primary btn-sm';
+    relayBtn.innerHTML = `
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="2" x2="12" y2="12"/></svg>
+      ${s.machine === 'ON' ? 'Matikan Mesin' : 'Nyalakan Mesin'}`;
+    relayBtn.onclick = () => toggleRelay(s.id, nextState === 'on');
+
+    openModal('modal-station');
+  };
+
+  // === Filter ===
+  window.filterStations = (val) => {
+    STATIONS.forEach(s => {
+      const el = document.getElementById(`cam-${s.id}`);
+      if (!el) return;
+      if (val === 'all') {
+        el.style.display = '';
+      } else if (val === 'idle') {
+        el.style.display = s.machine === 'OFF' ? '' : 'none';
+      } else {
+        el.style.display = s.status === val ? '' : 'none';
+      }
+    });
+  };
+});
+</script>
+</body>
+</html>
