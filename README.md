@@ -11,9 +11,25 @@
 
 ---
 
-## 🎥 Video Demonstrasi & Poster Proyek
-* 📺 **Video Demo Sistem Berjalan (YouTube):** [https://youtu.be/vaSmvxb3h44](https://youtu.be/vaSmvxb3h44)
-* 📄 **Poster Teknis Proyek:** Dokumen poster tersedia di folder [`docs/Kelompok 5_Poster_IoT.pdf`](./docs/Kelompok%205_Poster_IoT.pdf)
+## 📄 Poster Teknis & Video Demonstrasi Proyek
+
+### 1. Poster Teknis Proyek
+<div align="center">
+  <a href="./docs/Kelompok%205_Poster_IoT.pdf" title="Klik untuk membuka dokumen PDF asli">
+    <img src="./docs/poster_weldguard.png" alt="Poster Teknis WeldGuard" width="85%" style="border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.15);" />
+  </a>
+  <p><i>📄 <b>Poster Teknis Proyek WeldGuard</b> — Klik gambar untuk mengunduh versi PDF resolusi penuh</i></p>
+</div>
+
+<br/>
+
+### 2. Video Demonstrasi Sistem Berjalan
+<div align="center">
+  <a href="https://www.youtube.com/watch?v=vaSmvxb3h44" target="_blank" title="Klik untuk memutar video demonstrasi di YouTube">
+    <img src="./docs/video_thumbnail.png" alt="Tonton Video Demonstrasi WeldGuard" width="85%" style="border-radius: 8px; box-shadow: 0 6px 20px rgba(0,0,0,0.25);" />
+  </a>
+  <p><i>▶️ <b>Klik gambar video di atas untuk memutar rekaman demonstrasi sistem langsung di YouTube</b> (Pengujian Interlock Relay, RFID, dan Deteksi APD)</i></p>
+</div>
 
 ---
 
